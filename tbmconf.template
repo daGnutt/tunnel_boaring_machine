@@ -1,0 +1,21 @@
+# Remote Server
+username="user"
+domainname="example.com"
+sshkey="./testkey"
+
+# DNS server used to get a A record for the domainname.
+# Use external DNS server, this is to enable tunnler to as long as a route
+# to internet works, even if local dns services are down
+dnsserver="8.8.8.8"
+
+#Local Side Destionation for Tunnel
+tunnel_localside_ip="127.0.0.1"
+tunnel_localside_port="22"
+
+#Remote Side Tunnel port
+tunnel_remoteside_port_file="~/.ssh/tunnelport_CSS"
+
+#Configuration of Output
+output_log=1
+output_console=1
+logfile=tbmlog.log
