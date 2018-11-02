@@ -1,6 +1,26 @@
 #!/bin/bash
 
-source tbm.conf
+while getopts hc: option
+do
+case "${option}"
+in
+h) HELP="1";;
+c) CONFIGFILE=${OPTARG};;
+esac
+done
+
+
+if [ -z "$CONFIGFILE" ] || [ "$HELP" == "1" ]; then
+	echo "Usage: $0 -c <configfile>"
+	exit 0
+fi
+
+if [ ! -f "$CONFIGFILE" ]; then
+	echo "Could not read configfile"
+	exit 1
+fi
+
+source $CONFIGFILE
 
 function dnsfetch {
 	matchstring=";; ANSWER SECTION"
