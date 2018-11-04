@@ -132,7 +132,7 @@ function showmessage {
 		echo "$now $1" >> $logfile
 	fi
 
-	if [ -o $VERBOSE ]; then
+	if [ "$VERBOSE" ]; then
 		output_console=1
 	fi
 
