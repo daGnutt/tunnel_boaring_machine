@@ -1,11 +1,14 @@
 #!/bin/bash
 
-while getopts hc: option
+while getopts ghc:d:v option
 do
 case "${option}"
 in
+d) DEBUG=${OPTARG};;
+g) GENERATE=true;;
 h) HELP="1";;
 c) CONFIGFILE=${OPTARG};;
+v) VERBOSE=true;;
 esac
 done
 
@@ -13,6 +16,11 @@ cd "$( dirname "${BASH_SOURCE[0]}" )"
 
 if [ -z "$CONFIGFILE" ] || [ "$HELP" == "1" ]; then
 	echo "Usage: $0 -c <configfile>"
+	echo ""
+	echo " -c <configfile>"
+	echo " -d [portnum] - Force open a connection with [portnum]"
+	echo " -g - Generate ssh-keys, and push them"
+
 	exit 0
 fi
 
@@ -29,6 +37,10 @@ function dnsfetch {
 	ipaddress=`echo o$aresult | cut -d "A" -f 2`
 	echo "${ipaddress}" > dnscache
 	return 0
+}
+
+function generatesshkey {
+	ssh-keygen -f "${sshkey}" -N "" -b 4096 -C "TBM Key (${USER}@${HOSTNAME})"
 }
 
 function pushpubkey {
@@ -61,6 +73,9 @@ function checkfortunnel {
 	ipnumber=`cat dnscache | xargs` 
 
 	portnum=`ssh "${username}@${ipnumber}" -i ${sshkey} "cat ${tunnel_remoteside_port_file}"`
+	if [ "$DEBUG" ]; then
+		portnum=$DEBUG
+	fi 
 
 	lockfile="/tmp/tbm_${ipnumber}.lock"
 	if [ ! -f "$lockfile" ]; then
@@ -117,9 +132,20 @@ function showmessage {
 		echo "$now $1" >> $logfile
 	fi
 
+	if [ -o $VERBOSE ]; then
+		output_console=1
+	fi
+
 	if [ "$output_console" -eq 1 ]; then
 		echo $1
 	fi
 }
+
+if [ "$GENERATE" = true ]; then
+	showmessage "Generating new keys"
+	generatesshkey
+	pushpubkey
+	exit 0
+fi
 
 checkfortunnel
