@@ -9,6 +9,7 @@ c) CONFIGFILE=${OPTARG};;
 esac
 done
 
+cd "$( dirname "${BASH_SOURCE[0]}" )"
 
 if [ -z "$CONFIGFILE" ] || [ "$HELP" == "1" ]; then
 	echo "Usage: $0 -c <configfile>"
