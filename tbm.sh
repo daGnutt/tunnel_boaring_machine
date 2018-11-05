@@ -141,6 +141,22 @@ function showmessage {
 	fi
 }
 
+if [ ! -f "${sshkey}" -o ! -f "${sshkey}.pub" ]; then
+	echo "Missing SSH-key, do you wish to generate them?"
+	options=("yes" "no")
+	select opt in "${options[@]}"
+	do
+		case $opt in
+			"yes")
+				GENERATE=true
+				;;
+			"no")
+				exit 1
+				;;
+		esac
+	done
+fi
+
 if [ "$GENERATE" = true ]; then
 	showmessage "Generating new keys"
 	generatesshkey
