@@ -49,17 +49,38 @@ function pushpubkey {
 		return 1
 	fi
 
-	ssh-copy-id -i "${sshkey}.pub" "${username}@${domainname}"
-	result=$?
-	if [ $result -eq 1 ]; then
-		echo "Could not insert the key for some reason"
-		return 1
-	fi
-	echo "Key is installed."
-	echo "Please consider restricting commands for the key on the remote server."
-	echo ""
-	echo "Command to prepend to public key"
-	echo "COMMAND=\"cat ${tunnel_remoteside_port_file}\""
+	echo "Limit the key to only be used for the tunnel?"
+	options=("yes" "no")
+	select opt in "${options[@]}"
+	do
+		case $opt in
+		  "yes")
+		  	#DO THE CONFIGURATION ssh gnutt@halvordsson.se echo "'${sshcommandline}' >> ~/.ssh/authorized_keys"
+			pubkeyline=`cat ${sshkey}.pub`
+			commandline="command=\"cat ${tunnel_remoteside_port_file}\""
+			sshauthline="$commandline $pubkeyline"
+			ssh ${username}@${domainname} echo "'${sshauthline}' >> ~/.ssh/authorized_keys"
+			echo "Key should be installed, please verify it works"
+			break
+			;;
+		  "no")
+		    ssh-copy-id -i ${sshkey}.pub "${username}@${domainname}"
+			result=$?
+			if [ $result -eq 1 ]; then
+				echo "Could not insert the key for some reason"
+				return 1
+			fi
+			echo "Key is installed."
+			echo "Please consider restricting commands for the key on the remote server."
+			echo ""
+			echo "Command to prepend to public key"
+			echo "COMMAND=\"cat ${tunnel_remoteside_port_file}\""
+			break
+			;;
+		esac
+	done
+	echo "About to create/config the file for asking tunnel to start"
+	ssh -i ${sshkey} ${username}@${domainname} "echo 0 > ${tunnel_remoteside_port_file}"
 	return 0
 }
 
@@ -149,6 +170,7 @@ if [ ! -f "${sshkey}" -o ! -f "${sshkey}.pub" ]; then
 		case $opt in
 			"yes")
 				GENERATE=true
+				break
 				;;
 			"no")
 				exit 1
